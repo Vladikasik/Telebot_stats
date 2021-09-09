@@ -45,6 +45,6 @@ class DbConnector:
         else:
             return 0
 
-    def any_action(self, with_start=False, action_type, user_id):
-        pass
-
+    def any_action(self, action_type, user_id, with_start=False):
+        if action_type == 'msg':
+            pass
