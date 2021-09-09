@@ -44,3 +44,7 @@ class DbConnector:
             return 1
         else:
             return 0
+
+    def any_action(self, with_start=False, action_type, user_id):
+        pass
+
