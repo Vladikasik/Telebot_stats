@@ -22,29 +22,59 @@ class DbConnector:
         self.cur.execute('select * from "Users" where user_id=:id_given', {'id_given': user_id})
         ans = self.cur.fetchone()
         if not ans:
-            self.cur.execute('insert into "Users" (user_id, '
-                             'code_from_start, '
-                             'msg_amount_received_from_bot, '
-                             'msg_amount_sent_to_bot, '
-                             'last_msg_sfb, last_msg_stb, '
-                             'last_time_sfb, las_time_stb, '
-                             'bot_blocked_by_user) values '
-                             '(:id_given, '
-                             ':start_code_given,'
-                             '0,'
-                             '1,'
-                             '"",'
-                             '"/start",'
-                             '0,'
-                             ':timestamp,'
-                             'false)', {'id_given': user_id,
-                                        'start_code_given': start_code,
-                                        'timestamp': time.time()})
+            # noinspection SqlResolve
+            self.cur.execute('''insert into "Users" 
+                            (user_id,
+                             code_from_start, 
+                             msg_amount_received_from_bot, 
+                             msg_amount_sent_to_bot, 
+                             last_msg_sfb, last_msg_stb, 
+                             last_time_sfb, las_time_stb, 
+                             bot_blocked_by_user) 
+                             values 
+                             (:id_given, 
+                             :start_code_given,
+                             0,
+                             1,
+                             "",
+                             "/start",
+                             0,
+                             :timestamp,
+                             false)''', {'id_given': user_id,
+                                         'start_code_given': start_code,
+                                         'timestamp': time.time()})
             self.conn.commit()
             return 1
         else:
             return 0
 
-    def any_action(self, action_type, user_id, with_start=False):
-        if action_type == 'msg':
-            pass
+    def any_action(self, action, action_type_query, user_id, with_start=False):
+        self.conn = sqlite3.connect('db.sqlite')
+        self.cur = self.conn.cursor()
+        if action_type_query == 'msg':
+            action_id = action.id
+            action_type = "message"
+            action_text = action.text
+            action_command = False
+            from_user_id = action.from_user.id
+            action_date = time.time()
+            is_start = True if action_text.startswith('/start') else False
+            values = (action_id, action_type, action_type, action_text,
+                      action_command, from_user_id, action_date, is_start)
+            self.cur.execute('''insert into "Actions"
+                                (action_id, action_type,
+                                action_text, action_command,
+                                from_user_id, action_date,
+                                is_start)
+                                values (?, ?, ?, ?, ?, ?, ?)''', values)
+            self.cur.execute('''insert into "Users"
+                                (user_id,
+                                 code_from_start, 
+                                 msg_amount_received_from_bot, 
+                                 msg_amount_sent_to_bot, 
+                                 last_msg_sfb, last_msg_stb, 
+                                 last_time_sfb, las_time_stb, 
+                                 bot_blocked_by_user) 
+                                 values 
+                                 (:id_given,
+                                 )''')
