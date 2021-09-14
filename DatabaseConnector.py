@@ -8,7 +8,7 @@ class DbConnector:
         self.conn = None
         self.cur = None
 
-    def new_start(self, msg):
+    def _new_start(self, msg):
 
         self.conn = sqlite3.connect('db.sqlite')
         self.cur = self.conn.cursor()
@@ -29,7 +29,7 @@ class DbConnector:
                              msg_amount_received_from_bot, 
                              msg_amount_sent_to_bot, 
                              last_msg_sfb, last_msg_stb, 
-                             last_time_sfb, las_time_stb, 
+                             last_time_sfb, last_time_stb, 
                              bot_blocked_by_user) 
                              values 
                              (:id_given, 
@@ -44,6 +44,7 @@ class DbConnector:
                                          'start_code_given': start_code,
                                          'timestamp': time.time()})
             self.conn.commit()
+            self.conn.close()
             return 1
         else:
             return 0
@@ -67,14 +68,14 @@ class DbConnector:
                                 from_user_id, action_date,
                                 is_start)
                                 values (?, ?, ?, ?, ?, ?, ?)''', values)
-            self.cur.execute('''insert into "Users"
-                                (user_id,
-                                 code_from_start, 
-                                 msg_amount_received_from_bot, 
-                                 msg_amount_sent_to_bot, 
-                                 last_msg_sfb, last_msg_stb, 
-                                 last_time_sfb, las_time_stb, 
-                                 bot_blocked_by_user) 
-                                 values 
-                                 (:id_given,
-                                 )''')
+            if is_start:
+                self._new_start()
+            else:
+                self.cur.execute('''update "Users" set 
+                                    last_msg_stb = ?,
+                                    last_time_stb = ?,
+                                    msg_amount_sent_to_bot = msg_amount_sent_to_bot + 1
+                                    where user_id = ?''', (action_text, time.time(), from_user_id))
+            return 1
+        elif action_type_query == 'callback':
+            pass  # todo watch how to get a text from callback
