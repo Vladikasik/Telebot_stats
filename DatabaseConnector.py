@@ -45,8 +45,11 @@ class DbConnector:
                                          'timestamp': time.time()})
             self.conn.commit()
             self.conn.close()
+            print('User was succesfully added to db')
             return 1
         else:
+            print('User already exists in db\n'
+            '(it meands this user pressed /start 2nd time)')
             return 0
 
     def any_action(self, action, action_type_query, user_id, with_start=False):
@@ -79,3 +82,6 @@ class DbConnector:
             return 1
         elif action_type_query == 'callback':
             pass  # todo watch how to get a text from callback
+    
+    def bot_message(self, msg, to_user_id):
+        pass
