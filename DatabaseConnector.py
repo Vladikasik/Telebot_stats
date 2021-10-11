@@ -1,10 +1,12 @@
 import sqlite3
 import time
+from NastyJob import MsgDecoder
 
 
 class DbConnector:
 
     def __init__(self):
+        self.decoder = MsgDecoder()
         self.conn = None
         self.cur = None
 
@@ -13,11 +15,7 @@ class DbConnector:
         self.conn = sqlite3.connect('db.sqlite')
         self.cur = self.conn.cursor()
 
-        user_id = msg.from_user.id
-        try:
-            start_code = msg.text.split(' ')[1]
-        except IndexError:
-            start_code = 0
+        user_id, start_code, timeof = self.decoder.get_start(msg)
 
         self.cur.execute('select * from "Users" where user_id=:id_given', {'id_given': user_id})
         ans = self.cur.fetchone()
@@ -42,7 +40,7 @@ class DbConnector:
                              :timestamp,
                              false)''', {'id_given': user_id,
                                          'start_code_given': start_code,
-                                         'timestamp': time.time()})
+                                         'timestamp': timeof})
             self.conn.commit()
             self.conn.close()
             print('User was succesfully added to db')
@@ -56,15 +54,9 @@ class DbConnector:
         self.conn = sqlite3.connect('db.sqlite')
         self.cur = self.conn.cursor()
         if action_type_query == 'msg':
-            action_id = action.id
-            action_type = "message"
-            action_text = action.text
-            action_command = False
-            from_user_id = action.from_user.id
-            action_date = time.time()
-            is_start = True if action_text.startswith('/start') else False
-            values = (action_id, action_type, action_type, action_text,
-                      action_command, from_user_id, action_date, is_start)
+            # decoding all data from message body
+            # first going separrate values, then all-in-one values for sql
+            action_text, user_id, timeof, is_start, values = self.decoder.get_action(action)
             self.cur.execute('''insert into "Actions"
                                 (action_id, action_type,
                                 action_text, action_command,
@@ -78,7 +70,9 @@ class DbConnector:
                                     last_msg_stb = ?,
                                     last_time_stb = ?,
                                     msg_amount_sent_to_bot = msg_amount_sent_to_bot + 1
-                                    where user_id = ?''', (action_text, time.time(), from_user_id))
+                                    where user_id = ?''', (action_text, timeof, user_id))
+            self.conn.commit()
+            self.cur.close()
             return 1
         elif action_type_query == 'callback':
             pass  # todo watch how to get a text from callback
