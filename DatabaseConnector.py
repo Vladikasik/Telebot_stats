@@ -20,7 +20,6 @@ class DbConnector:
         self.cur.execute('select * from "Users" where user_id=:id_given', {'id_given': user_id})
         ans = self.cur.fetchone()
         if not ans:
-            # noinspection SqlResolve
             self.cur.execute('''insert into "Users" 
                             (user_id,
                              code_from_start, 

@@ -21,5 +21,6 @@ class MsgDecoder:
         from_user_id = action.from_user.id
         action_date = time.time()
         is_start = True if action_text.startswith('/start') else False
-        return (action_id, action_type, action_type, action_text,
-                action_command, from_user_id, action_date, is_start), is_start
+        values = (action_id, action_type, action_type, action_text,
+                action_command, from_user_id, action_date, is_start)
+        return action_text, from_user_id, time.time(), is_start, values
