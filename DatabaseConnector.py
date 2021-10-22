@@ -55,7 +55,7 @@ class DbConnector:
         if action_type_query == 'msg':
             # decoding all data from message body
             # first going separrate values, then all-in-one values for sql
-            action_text, user_id, timeof, is_start, values = self.decoder.get_action(action)
+            action_text, user_id, timeof, is_start, values = self.decoder.get_action(action, 'msg')
             self.cur.execute('''insert into "Actions"
                                 (action_id, action_type,
                                 action_text, action_command,
@@ -74,7 +74,12 @@ class DbConnector:
             self.cur.close()
             return 1
         elif action_type_query == 'callback':
-            pass  # todo watch how to get a text from callback
-    
+            action_text, from_user_id, timeof, values = self.decoder.get_action(action, 'callback')
+            self.cur.execute('''insert into "Actions"
+                                (action_id, action_type,
+                                action_text, action_command,
+                                from_user_id, action_date
+                                is_start)
+                                values (?,?,?,?,?,?,?)''')
     def bot_message(self, msg, to_user_id):
         pass
