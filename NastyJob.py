@@ -28,8 +28,8 @@ class MsgDecoder:
         elif typeof == 'callback':
             action_id = action.id
             action_type = "callback"
-            action_text = action.message.json.reply_markup.inline_keyboard[0][0].text
-            action_command = action.message.json.reply_markup.inline_keyboard[0][0].callback_data
+            action_text = action.message.json['reply_markup']['inline_keyboard'][0][0]['text']
+            action_command = action.message.json['reply_markup']['inline_keyboard'][0][0]['callback_data']
             from_user_id = action.from_user.id
             action_date = time.time()
             is_start = False
