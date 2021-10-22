@@ -36,3 +36,10 @@ class MsgDecoder:
             values = (action_id, action_type, action_text,
                     action_command, from_user_id, action_date, is_start)
             return action_text, from_user_id, action_date, values
+
+class Logger():
+
+    def __init__(self):
+        pass
+    def log(self, msg):
+        print(f'[{int(time.time())}] {msg}')
